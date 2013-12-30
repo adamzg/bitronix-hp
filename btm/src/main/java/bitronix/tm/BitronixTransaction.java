@@ -293,16 +293,9 @@ public class BitronixTransaction implements Transaction, BitronixTransactionMBea
             try {
                 if (log.isDebugEnabled()) log.debug("rolling back, " + resourceManager.size() + " enlisted resource(s)");
 
-                List<XAResourceHolderState> resourcesToRollback = new ArrayList<XAResourceHolderState>();
-                List<XAResourceHolderState> allResources = resourceManager.getAllResources();
-                for (XAResourceHolderState resource : allResources) {
-                    if (!resource.isFailed())
-                        resourcesToRollback.add(resource);
-                }
+                rollbacker.rollback(this, resourceManager.getAllResources());
 
-                rollbacker.rollback(this, resourcesToRollback);
-
-                if (log.isDebugEnabled()) log.debug("successfully rolled back " + this);
+                if (log.isDebugEnabled()) log.debug("successfully rolled back using m2 patch " + this);
             } catch (HeuristicMixedException ex) {
                 throw new BitronixSystemException("transaction partly committed and partly rolled back. Resources are now inconsistent !", ex);
             } catch (HeuristicCommitException ex) {
